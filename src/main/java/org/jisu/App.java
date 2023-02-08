@@ -19,9 +19,11 @@ public class App
         int choice;
         do {
             
-            System.out.println("Enter |1|-> (Add Customer) |2|-> (Close Account) |3|-> (Display a customer) |4|-> (Display all customer) |5|->(Deposit) |6|-> (Withdraw) |7|->(Balance Inquiry) |8|-> (Get Statement) |0|->(Exit)");
+            System.out.println("Enter |1|-> (Add Customer) |2|-> (Close Account) |3|-> (Display a customer)  |4|-> (Display all customer)");
+            System.out.println("|5|->(Deposit) |6|-> (Withdraw) |7|->(Balance Inquiry) |8|-> (Get Statement) |9-> (Neft) |0|->(Exit)");
             int id;
             Customer temp;
+            Customer temp2;
             choice = sc.nextInt();
             switch (choice) {
                 case 1:
@@ -143,6 +145,40 @@ public class App
                     System.out.println("Enter Customer id");
                     id= sc.nextInt();
                     service.getSt(id).forEach(System.out::println);
+                    break;
+
+                case 9:
+                    System.out.println("Enter Sender CustomerId");
+                    id=sc.nextInt();
+                    if(service.Find(id)==null)
+                    {
+                        System.out.println("CustomerId not found!");
+                        break;
+                    }
+
+                    System.out.println("Enter Receiver CustomerId");
+                    int id2=sc.nextInt();
+                    if(service.Find(id2)==null)
+                    {
+                        System.out.println("Customer Not found");
+                        break;
+                    }
+
+                    System.out.println("Enter the Amount for Transfer");
+                    int n=sc.nextInt();
+                    temp=service.Find(id);
+                    temp2=service.Find(id2);
+
+                    if(temp.getBalance()<n)
+                    {
+                        System.out.println("Insufficient Balance!!");
+                        break;
+                    }
+                    service.neft(temp,temp2,n);
+
+                    System.out.println("Successfully Transferred "+n);
+
+                    System.out.println(" Your Available Balance is "+(temp.getBalance()-n)+"/-");
                     break;
 
             }

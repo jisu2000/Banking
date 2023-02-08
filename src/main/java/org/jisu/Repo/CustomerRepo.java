@@ -19,7 +19,7 @@ public interface CustomerRepo {
 
     public Integer showBalance(Customer customer);
 
-
+    public void Neft(Customer one,Customer two,Integer amount);
 
     public List<Customer> findAll();
 

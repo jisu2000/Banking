@@ -23,4 +23,6 @@ public interface CustomerService {
 
     public Integer Showbalanace(Customer customer);
 
+    public void neft(Customer one,Customer two, Integer amount);
+
 }

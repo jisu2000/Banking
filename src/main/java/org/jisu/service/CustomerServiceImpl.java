@@ -61,4 +61,9 @@ public class CustomerServiceImpl implements CustomerService{
         return  customer.getBalance();
     }
 
+    @Override
+    public void neft(Customer one, Customer two, Integer amount) {
+        service.Neft(one,two,amount);
+    }
+
 }

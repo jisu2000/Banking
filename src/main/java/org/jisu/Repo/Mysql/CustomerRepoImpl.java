@@ -12,6 +12,7 @@ import java.util.List;
 public class CustomerRepoImpl implements CustomerRepo {
 
 
+    boolean unchange;
     LocalDate dt = java.time.LocalDate.now();
     String d = dt.toString();
     private Connection connection;
@@ -112,7 +113,7 @@ public class CustomerRepoImpl implements CustomerRepo {
 
 
         String sql="UPDATE  banking SET balance=? WHERE customerid=?";
-        String sql2="INSERT INTO statement VALUES(?,?,?,?,?)";
+        String sql2="INSERT INTO statement VALUES(?,?,?,?,?,?,?)";
         try {
             PreparedStatement ps=connection.prepareStatement(sql);
             ps.setInt(1,bal+val);
@@ -121,10 +122,13 @@ public class CustomerRepoImpl implements CustomerRepo {
             PreparedStatement ps1=connection.prepareStatement(sql2);
             ps1.setInt(4,val);
             ps1.setInt(3,0);
-            ps1.setInt(5,bal+val);
+            ps1.setInt(7,bal+val);
             ps1.setString(2,d);
             ps1.setInt(1,customer.getCustomerid());
+            ps1.setInt(5,0);
+            ps1.setString(6,"");
             ps1.executeUpdate();
+
 
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -133,31 +137,37 @@ public class CustomerRepoImpl implements CustomerRepo {
 
     @Override
     public void withdraw(Customer customer, Integer val) {
-        boolean unchange=false;
+
+        unchange=false;
         if(customer.getBalance()<val)
         {
             unchange=true;
         }
         int bal=customer.getBalance();
         String sql="UPDATE  banking SET balance=? WHERE customerid=?";
-        String sql2="INSERT INTO statement VALUES(?,?,?,?,?)";
+        String sql2="INSERT INTO statement VALUES(?,?,?,?,?,?,?)";
         try {
             PreparedStatement ps=connection.prepareStatement(sql);
             if(unchange)
             {
                 ps.setInt(1,bal);
+                ps.setInt(2,customer.getCustomerid());
             }
-            ps.setInt(1,bal-val);
-            ps.setInt(2,customer.getCustomerid());
+            else {
+                ps.setInt(1, bal - val);
+                ps.setInt(2, customer.getCustomerid());
+            }
             ps.executeUpdate();
 
             if(!unchange) {
                 PreparedStatement ps1 = connection.prepareStatement(sql2);
                 ps1.setInt(3, val);
                 ps1.setInt(4, 0);
-                ps1.setInt(5, bal - val);
+                ps1.setInt(7, bal - val);
                 ps1.setString(2, d);
                 ps1.setInt(1, customer.getCustomerid());
+                ps1.setString(6,"Null");
+                ps1.setInt(5,0);
                 ps1.executeUpdate();
             }
         } catch (SQLException e) {
@@ -171,6 +181,100 @@ public class CustomerRepoImpl implements CustomerRepo {
     @Override
     public Integer showBalance(Customer customer) {
         return customer.getBalance();
+    }
+
+    @Override
+    public void Neft(Customer one,Customer two,Integer amount) {
+        unchange=false;
+
+        String sql="UPDATE banking SET balance=? WHERE customerid=?";
+        String sql2="UPDATE banking SET balance=? WHERE customerid=?";
+        if(one.getBalance()<amount)
+        {
+            unchange=true;
+        }
+
+        try{
+            PreparedStatement ps=connection.prepareStatement(sql);
+
+            if(unchange)
+            {
+                ps.setInt(1,two.getBalance());
+                ps.setInt(2,two.getCustomerid());
+            }
+            else{
+
+                ps.setInt(1,two.getBalance()+amount);
+                ps.setInt(2,two.getCustomerid());
+            }
+            ps.executeUpdate();
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+
+        try {
+                PreparedStatement ps1=connection.prepareStatement(sql2);
+
+            if(unchange){
+                ps1.setInt(1,one.getBalance());
+                ps1.setInt(2,one.getBalance());
+            }
+
+            else{
+                ps1.setInt(1,one.getBalance()-amount);
+                ps1.setInt(2,one.getCustomerid());
+            }
+            ps1.executeUpdate();
+
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+
+        String sender="INSERT INTO statement VALUES(?,?,?,?,?,?,?)";
+        String receiver="INSERT INTO statement VALUES(?,?,?,?,?,?,?)";
+            if (!unchange)
+            {
+                try {
+
+                    int b=one.getBalance();
+
+                    PreparedStatement ps1 = connection.prepareStatement(sender);
+                    ps1.setInt(3, amount);
+                    ps1.setInt(4, 0);
+                    ps1.setInt(7, b - amount);
+                    ps1.setString(2, d);
+                    ps1.setInt(1, one.getCustomerid());
+                    ps1.setString(6, "Null");
+                    ps1.setInt(5, 0);
+                    ps1.executeUpdate();
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
+        if (!unchange)
+        {
+            try {
+
+
+
+                PreparedStatement ps1 = connection.prepareStatement(receiver);
+                ps1.setInt(3, 0);
+                ps1.setInt(4, 0);
+                ps1.setInt(7, two.getBalance()+amount);
+                ps1.setString(2, d);
+                ps1.setInt(1, two.getCustomerid());
+                ps1.setString(6, one.getCustomerName());
+                ps1.setInt(5, amount);
+                ps1.executeUpdate();
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+
     }
 
     @Override
@@ -207,7 +311,7 @@ public class CustomerRepoImpl implements CustomerRepo {
 
             while(resultSet.next())
             {
-                Statements statement=new Statements(resultSet.getInt("customerid"),resultSet.getString("dt"),resultSet.getInt("withdrawl"),resultSet.getInt("diposite"),resultSet.getInt("aval"));
+                Statements statement=new Statements(resultSet.getInt("customerid"),resultSet.getString("dt"),resultSet.getInt("withdrawl"),resultSet.getInt("diposite"),resultSet.getInt("neft"),resultSet.getString("neftperson"),resultSet.getInt("aval"));
                 if(resultSet.getInt("customerid")==customerid) {
                     list.add(statement);
                 }
